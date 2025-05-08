@@ -2,39 +2,24 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sistema da Clínica</title>
+  <link rel="stylesheet" href="style.css" />
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-100 text-gray-800">
-  <header class="bg-blue-600 text-white p-6 shadow-md">
-    <h1 class="text-3xl font-bold text-center">Sistema da Clínica</h1>
-  </header>
+<body class="bg-gray-100 text-gray-900">
+  <div class="min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="bg-white p-8 rounded shadow-lg w-full max-w-md">
+      <h1 class="text-2xl font-bold mb-6 text-center">Sistema da Clínica</h1>
 
-  <main class="max-w-4xl mx-auto mt-10">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-      <a href="agenda.html" class="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition">
-        <h2 class="text-xl font-semibold mb-2">Agenda</h2>
-        <p>Gerencie os horários e agendamentos dos pacientes.</p>
-      </a>
-
-      <a href="financeiro.html" class="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition">
-        <h2 class="text-xl font-semibold mb-2">Financeiro</h2>
-        <p>Controle receitas, despesas e visualize relatórios financeiros.</p>
-      </a>
-
-      <a href="relatorio.html" class="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition">
-        <h2 class="text-xl font-semibold mb-2">Relatórios</h2>
-        <p>Gere e exporte relatórios financeiros da clínica.</p>
-      </a>
-
-      <!-- Você pode adicionar mais módulos aqui futuramente -->
+      <div class="flex flex-col space-y-4">
+        <a href="agenda.html" class="block text-center bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Agenda de Consultas</a>
+        <a href="cadastro.html" class="block text-center bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">Cadastro de Pacientes</a>
+        <a href="financeiro.html" class="block text-center bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded">Financeiro</a>
+        <a href="relatorio.html" class="block text-center bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded">Relatórios</a>
+        <a href="painel.html" class="block text-center bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded">Painel Geral</a>
+      </div>
     </div>
-  </main>
-
-  <footer class="text-center text-sm text-gray-500 mt-10 p-4">
-    &copy; 2025 Sistema da Clínica - Todos os direitos reservados.
-  </footer>
+  </div>
 </body>
 </html>
