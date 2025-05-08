@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Financeiro - Clínica</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 p-4">
+
+  <div class="max-w-4xl mx-auto bg-white shadow rounded-lg p-6 space-y-6">
+    <h1 class="text-2xl font-bold mb-4 text-center">Controle Financeiro</h1>
+
+    <!-- Formulário -->
+    <form id="formFinanceiro" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block font-medium">Tipo</label>
+        <select id="tipo" class="w-full border rounded p-2" required>
+          <option value="receita">Receita</option>
+          <option value="despesa">Despesa</option>
+        </select>
+      </div>
+      <div>
+        <label class="block font-medium">Categoria</label>
+        <input type="text" id="categoria" class="w-full border rounded p-2" required placeholder="Ex: Consulta, Aluguel..." />
+      </div>
+      <div>
+        <label class="block font-medium">Valor (R$)</label>
+        <input type="number" step="0.01" id="valor" class="w-full border rounded p-2" required />
+      </div>
+      <div>
+        <label class="block font-medium">Data</label>
+        <input type="date" id="data" class="w-full border rounded p-2" required />
+      </div>
+      <div class="md:col-span-2">
+        <label class="block font-medium">Descrição</label>
+        <textarea id="descricao" class="w-full border rounded p-2" placeholder="Opcional"></textarea>
+      </div>
+      <div class="md:col-span-2 text-right">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+          Salvar Lançamento
+        </button>
+      </div>
+    </form>
+
+    <!-- Filtros -->
+    <div class="bg-gray-50 p-4 rounded border mt-6">
+      <h2 class="font-semibold text-lg mb-2">Filtros</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <select id="filtroTipo" class="border rounded p-2">
+          <option value="">Todos os Tipos</option>
+          <option value="receita">Receita</option>
+          <option value="despesa">Despesa</option>
+        </select>
+        <input type="text" id="filtroCategoria" class="border rounded p-2" placeholder="Filtrar por categoria..." />
+        <input type="date" id="filtroData" class="border rounded p-2" />
+      </div>
+    </div>
+
+    <!-- Totais -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center font-semibold text-lg">
+      <div class="bg-green-100 p-4 rounded shadow">
+        <p>Receitas</p>
+        <p id="totalReceitas">R$ 0,00</p>
+      </div>
+      <div class="bg-red-100 p-4 rounded shadow">
+        <p>Despesas</p>
+        <p id="totalDespesas">R$ 0,00</p>
+      </div>
+      <div class="bg-blue-100 p-4 rounded shadow">
+        <p>Saldo</p>
+        <p id="saldoFinal">R$ 0,00</p>
+      </div>
+    </div>
+
+    <!-- Lista de Lançamentos -->
+    <div>
+      <h2 class="text-xl font-bold mt-6 mb-3">Lançamentos</h2>
+      <ul id="listaLancamentos" class="space-y-2"></ul>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+      <div class="bg-white p-4 rounded shadow">
+        <h3 class="text-center font-semibold mb-2">Distribuição por Categoria</h3>
+        <canvas id="graficoPizza"></canvas>
+      </div>
+      <div class="bg-white p-4 rounded shadow">
+        <h3 class="text-center font-semibold mb-2">Receitas x Despesas por Mês</h3>
+        <canvas id="graficoBarras"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script src="financeiro.js"></script>
+</body>
+</html>

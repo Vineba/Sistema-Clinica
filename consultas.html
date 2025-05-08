@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agenda de Consultas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-xl mx-auto bg-white p-6 rounded shadow">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-blue-600">Agendar Consulta</h1>
+      <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+        Sair
+      </button>
+    </div>
+
+    <form id="formConsulta" class="space-y-4">
+      <input type="text" id="nomePaciente" placeholder="Nome do paciente" required class="w-full p-2 border rounded" />
+      <input type="datetime-local" id="dataHora" required class="w-full p-2 border rounded" />
+      <input type="text" id="observacoes" placeholder="Observações" class="w-full p-2 border rounded" />
+      <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+        Salvar Consulta
+      </button>
+    </form>
+
+    <p id="mensagem" class="mt-4 text-green-600"></p>
+    <hr class="my-6">
+
+    <h2 class="text-xl font-semibold mb-2 text-gray-700">Consultas Agendadas</h2>
+    <div class="flex gap-2 mb-4">
+      <input type="text" id="filtroNome" placeholder="Filtrar por nome" class="flex-1 p-2 border rounded" />
+      <input type="date" id="filtroData" class="p-2 border rounded" />
+    </div>
+    <ul id="listaConsultas" class="space-y-2"></ul>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+  <!-- Firebase Init + Proteção de Rota + Logout -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAaxV6VvQ0xWXQkxSBIiYYaKzLMcYWyY2E",
+      authDomain: "sistema-clinica-a8bc0.firebaseapp.com",
+      projectId: "sistema-clinica-a8bc0",
+      storageBucket: "sistema-clinica-a8bc0.appspot.com",
+      messagingSenderId: "358716597367",
+      appId: "1:358716597367:web:c25e427d1ee6c00b2d1272"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Proteção de rota
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "login.html";
+      });
+    }
+  </script>
+
+  <!-- Seu script de consultas -->
+  <script src="js/consultas.js"></script>
+</body>
+</html>

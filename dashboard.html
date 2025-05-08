@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Painel da Clínica</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-6xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold text-blue-600 mb-6">Painel Geral da Clínica</h1>
+
+    <!-- Cards resumo -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-blue-100 p-4 rounded shadow">
+        <h2 class="text-lg font-semibold text-blue-700">Receitas do mês</h2>
+        <p id="totalReceitas" class="text-2xl font-bold">R$ 0,00</p>
+      </div>
+      <div class="bg-red-100 p-4 rounded shadow">
+        <h2 class="text-lg font-semibold text-red-700">Despesas do mês</h2>
+        <p id="totalDespesas" class="text-2xl font-bold">R$ 0,00</p>
+      </div>
+      <div class="bg-green-100 p-4 rounded shadow">
+        <h2 class="text-lg font-semibold text-green-700">Saldo</h2>
+        <p id="saldoAtual" class="text-2xl font-bold">R$ 0,00</p>
+      </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white p-4 rounded shadow border">
+        <h3 class="text-lg font-bold mb-2">Fluxo Financeiro</h3>
+        <canvas id="graficoLinha"></canvas>
+      </div>
+      <div class="bg-white p-4 rounded shadow border">
+        <h3 class="text-lg font-bold mb-2">Distribuição por Tipo</h3>
+        <canvas id="graficoPizza"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Config -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAaxV6VvQ0xWXQkxSBIiYYaKzLMcYWyY2E",
+      authDomain: "sistema-clinica-a8bc0.firebaseapp.com",
+      projectId: "sistema-clinica-a8bc0"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
+
+  <!-- Script do Dashboard -->
+  <script src="dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Relatórios Financeiros</title>
+
+  <!-- Adicionando a biblioteca jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
+    <h1 class="text-3xl font-semibold text-blue-600 mb-6">Relatórios Financeiros</h1>
+
+    <div class="space-y-6">
+      <div class="flex flex-col sm:flex-row gap-4">
+        <!-- Filtro Data Início -->
+        <div class="flex-1">
+          <label for="filtroDataInicio" class="block text-sm font-medium text-gray-700">Data Início</label>
+          <input type="text" id="filtroDataInicio" placeholder="AAAA-MM-DD" class="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent mt-2">
+        </div>
+
+        <!-- Filtro Data Fim -->
+        <div class="flex-1">
+          <label for="filtroDataFim" class="block text-sm font-medium text-gray-700">Data Fim</label>
+          <input type="text" id="filtroDataFim" placeholder="AAAA-MM-DD" class="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent mt-2">
+        </div>
+      </div>
+
+      <table id="tabelaFinanceiro" class="table-auto w-full border border-gray-300 mt-6">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="p-2 border text-left">Data</th>
+            <th class="p-2 border text-left">Valor</th>
+            <th class="p-2 border text-left">Categoria</th>
+            <th class="p-2 border text-left">Descrição</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Dados das transações financeiras irão aqui -->
+        </tbody>
+      </table>
+
+      <button id="gerarPDF" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 w-full sm:w-auto mt-6">
+        Gerar PDF
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "Sua_API_KEY",
+      authDomain: "sistema-clinica-a8bc0.firebaseapp.com",
+      projectId: "sistema-clinica-a8bc0",
+      storageBucket: "sistema-clinica-a8bc0.appspot.com",
+      messagingSenderId: "358716597367",
+      appId: "1:358716597367:web:c25e427d1ee6c00b2d1272"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Função para carregar os dados financeiros
+    function carregarRelatorio() {
+      const dataInicio = document.getElementById("filtroDataInicio").value;
+      const dataFim = document.getElementById("filtroDataFim").value;
+
+      db.collection("financeiro")
+        .where("data", ">=", dataInicio)
+        .where("data", "<=", dataFim)
+        .get()
+        .then((snapshot) => {
+          const tabela = document.getElementById("tabelaFinanceiro").getElementsByTagName('tbody')[0];
+          tabela.innerHTML = ""; // Limpa a tabela
+
+          snapshot.forEach((doc) => {
+            const transacao = doc.data();
+            const data = transacao.data.toDate();
+            const valorFormatado = transacao.valor.toFixed(2).replace(".", ",");
+
+            const row = tabela.insertRow();
+            row.innerHTML = `
+              <td class="p-2 border">${data.toLocaleDateString()}</td>
+              <td class="p-2 border">R$ ${valorFormatado}</td>
+              <td class="p-2 border">${transacao.categoria}</td>
+              <td class="p-2 border">${transacao.descricao}</td>
+            `;
+          });
+        });
+    }
+
+    // Evento para carregar os dados ao mudar os filtros de data
+    document.getElementById("filtroDataInicio").addEventListener("input", carregarRelatorio);
+    document.getElementById("filtroDataFim").addEventListener("input", carregarRelatorio);
+
+    // Carregar relatório ao inicializar a página
+    carregarRelatorio();
+
+    // Função para gerar o PDF
+    document.getElementById("gerarPDF").addEventListener("click", () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Adicionar título ao PDF
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("Relatório Financeiro", 14, 20);
+
+      // Cabeçalho da tabela no PDF
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      doc.setFillColor(230, 230, 230);
+      doc.rect(14, 30, 180, 10, 'F'); // Fundo da linha de cabeçalho
+      doc.text("Data", 16, 35);
+      doc.text("Valor", 60, 35);
+      doc.text("Categoria", 100, 35);
+      doc.text("Descrição", 140, 35);
+
+      // Adicionar transações financeiras ao PDF
+      let yPosition = 40;
+      const tabela = document.getElementById("tabelaFinanceiro").getElementsByTagName('tbody')[0];
+      for (let row of tabela.rows) {
+        const cols = row.cells;
+        doc.text(cols[0].textContent, 16, yPosition);
+        doc.text(cols[1].textContent, 60, yPosition);
+        doc.text(cols[2].textContent, 100, yPosition);
+        doc.text(cols[3].textContent, 140, yPosition);
+        yPosition += 10;
+      }
+
+      // Linha final
+      doc.setLineWidth(0.5);
+      doc.line(14, yPosition, 195, yPosition);
+
+      // Gerar o PDF e abrir na nova aba
+      doc.save("relatorio_financeiro.pdf");
+    });
+  </script>
+</body>
+</html>
+

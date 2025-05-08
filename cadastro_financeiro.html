@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastrar Receita/Despesa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  
+</head>
+<body class="bg-gray-100 p-6">
+
+  <!-- Container -->
+  <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
+    <h1 class="text-3xl font-bold text-blue-600 mb-6">Cadastrar Receita/Despesa</h1>
+
+    <!-- Menu de Navegação -->
+    <nav class="mb-6">
+      <ul class="flex space-x-4">
+        <li><a href="index.html" class="text-blue-600 hover:text-blue-800">Página Principal</a></li>
+        <li><a href="agenda.html" class="text-blue-600 hover:text-blue-800">Agenda</a></li>
+        <li><a href="financeiro.html" class="text-blue-600 hover:text-blue-800">Relatório Financeiro</a></li>
+        <li><a href="cadastro_financeiro.html" class="text-blue-600 hover:text-blue-800">Cadastrar Receita/Despesa</a></li>
+      </ul>
+    </nav>
+
+    <!-- Formulário de Cadastro -->
+    <div class="bg-gray-50 p-6 rounded-lg shadow-md">
+      <form id="formCadastro" class="space-y-6">
+        <!-- Tipo (Receita ou Despesa) -->
+        <div>
+          <label for="tipo" class="block text-sm font-medium text-gray-700">Tipo</label>
+          <select id="tipo" name="tipo" class="block w-full mt-2 p-2 border border-gray-300 rounded-lg">
+            <option value="receita">Receita</option>
+            <option value="despesa">Despesa</option>
+          </select>
+        </div>
+
+        <!-- Descrição -->
+        <div>
+          <label for="descricao" class="block text-sm font-medium text-gray-700">Descrição</label>
+          <input type="text" id="descricao" name="descricao" class="block w-full mt-2 p-2 border border-gray-300 rounded-lg" placeholder="Descrição da receita/despesa" required>
+        </div>
+
+        <!-- Valor -->
+        <div>
+          <label for="valor" class="block text-sm font-medium text-gray-700">Valor</label>
+          <input type="number" id="valor" name="valor" class="block w-full mt-2 p-2 border border-gray-300 rounded-lg" placeholder="Valor" required>
+        </div>
+
+        <!-- Data -->
+        <div>
+          <label for="data" class="block text-sm font-medium text-gray-700">Data</label>
+          <input type="date" id="data" name="data" class="block w-full mt-2 p-2 border border-gray-300 rounded-lg" required>
+        </div>
+
+        <!-- Botões -->
+        <div class="flex justify-end space-x-4">
+          <button type="reset" class="px-4 py-2 rounded-lg border bg-gray-200 hover:bg-gray-300">Limpar</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Salvar</button>
+        </div>
+      </form>
+      
+      <p id="mensagem" class="mt-4 text-center text-green-600 font-medium"></p>
+    </div>
+  </div>
+
+  <!-- Script Firebase e Lógica do Formulário -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "Sua_API_KEY",
+      authDomain: "sistema-clinica-a8bc0.firebaseapp.com",
+      projectId: "sistema-clinica-a8bc0",
+      storageBucket: "sistema-clinica-a8bc0.appspot.com",
+      messagingSenderId: "358716597367",
+      appId: "1:358716597367:web:c25e427d1ee6c00b2d1272"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Função para salvar a receita/despesa
+    document.getElementById("formCadastro").addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const tipo = document.getElementById("tipo").value;
+      const descricao = document.getElementById("descricao").value;
+      const valor = parseFloat(document.getElementById("valor").value);
+      const data = document.getElementById("data").value;
+
+      db.collection("financeiro").add({
+        tipo: tipo,
+        descricao: descricao,
+        valor: valor,
+        data: firebase.firestore.Timestamp.fromDate(new Date(data)),
+        criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      })
+      .then(() => {
+        document.getElementById("mensagem").textContent = "Receita/Despesa cadastrada com sucesso!";
+        document.getElementById("formCadastro").reset();
+      })
+      .catch((error) => {
+        document.getElementById("mensagem").textContent = "Erro ao salvar: " + error.message;
+      });
+    });
+  </script>
+</body>
+</html>

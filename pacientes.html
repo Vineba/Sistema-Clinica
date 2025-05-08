@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro de Pacientes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4 text-blue-600">Cadastrar Paciente</h1>
+
+    <form id="formPaciente" class="space-y-4">
+      <input type="text" id="nome" placeholder="Nome completo" required class="w-full p-2 border rounded" />
+      <input type="text" id="telefone" placeholder="Telefone" required class="w-full p-2 border rounded" />
+      <input type="date" id="nascimento" required class="w-full p-2 border rounded" />
+      <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+        Salvar
+      </button>
+    </form>
+
+    <p id="mensagem" class="mt-4 text-green-600"></p>
+    <hr class="my-6">
+
+<h2 class="text-xl font-semibold mb-2 text-gray-700">Pacientes Cadastrados</h2>
+<input type="text" id="buscaNome" placeholder="Buscar por nome..." class="w-full p-2 border rounded mb-4" />
+<ul id="listaPacientes" class="space-y-2"></ul>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script>
+    // Inicialize o Firebase, se ainda não tiver feito isso
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_AUTH_DOMAIN",
+      projectId: "SEU_PROJECT_ID",
+      // ... restante das configurações
+    };
+  
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+  
+    // Redireciona para login se não estiver logado
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+  </script>  
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <!-- Script do Firebase e cadastro -->
+  <script src="js/auth.js"></script>
+  <script src="js/pacientes.js"></script>
+</body>
+</html>
