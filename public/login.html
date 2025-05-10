@@ -20,28 +20,31 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   
   <!-- Seu script -->
-  <script src="js/auth.js"></script>
-  <script> const firebaseConfig = {
-    apiKey: "SUA_API_KEY",
-    authDomain: "SEU_PROJETO.firebaseapp.com",
-    projectId: "SEU_PROJETO_ID",
-    // ... demais configs do Firebase
-  };
-  
-  firebase.initializeApp(firebaseConfig);
-  
-  function login() {
-    const email = document.getElementById("email").value;
-    const senha = document.getElementById("senha").value;
-  
-    firebase.auth().signInWithEmailAndPassword(email, senha)
-      .then(() => {
-        window.location.href = "index.html"; // Redireciona após login
-      })
-      .catch((error) => {
-        document.getElementById("erro").textContent = "Erro: " + error.message;
-      });
-  }
+  <script src="auth.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",  // Substitua com a sua API Key do Firebase
+      authDomain: "SEU_PROJETO.firebaseapp.com",  // Substitua com o seu domínio
+      projectId: "SEU_PROJETO_ID",  // Substitua com o seu ID do projeto
+      storageBucket: "SEU_PROJETO.appspot.com",  // Substitua com o seu storage bucket
+      messagingSenderId: "SEU_MESSAGING_SENDER_ID",  // Substitua com seu sender ID
+      appId: "SEU_APP_ID"  // Substitua com seu app ID
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+
+    function login() {
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
+
+      firebase.auth().signInWithEmailAndPassword(email, senha)
+        .then(() => {
+          window.location.href = "index.html"; // Redireciona após login
+        })
+        .catch((error) => {
+          document.getElementById("erro").textContent = "Erro: " + error.message;
+        });
+    }
   </script>
 </body>
 </html>

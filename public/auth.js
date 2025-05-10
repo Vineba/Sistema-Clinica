@@ -1,4 +1,4 @@
-// Configuração do Firebase (compatível com HTML puro)
+// Configuração do Firebase (compartilhada no arquivo HTML)
 const firebaseConfig = {
   apiKey: "AIzaSyAaxV6VvQ0xWXQkxSBIiYYaKzLMcYWyY2E",
   authDomain: "sistema-clinica-a8bc0.firebaseapp.com",
@@ -8,7 +8,7 @@ const firebaseConfig = {
   appId: "1:358716597367:web:c25e427d1ee6c00b2d1272"
 };
 
-// Inicializa o Firebase
+// Inicializa o Firebase apenas uma vez no arquivo auth.js
 firebase.initializeApp(firebaseConfig);
 
 // Função de login
@@ -25,7 +25,7 @@ function login() {
     });
 }
 
-// Protege o dashboard
+// Protege o dashboard (e outras páginas que requerem autenticação)
 function protegerPagina() {
   firebase.auth().onAuthStateChanged((user) => {
     if (!user) {
@@ -41,19 +41,16 @@ function logout() {
   });
 }
 
-// Protege o login
-if (window.location.pathname.includes("login.html")) {
-  firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-      window.location.href = "dashboard.html";  // Se já estiver logado, redireciona para o dashboard
-    }
-  });
-}
+// Verifica se o usuário está logado e redireciona de acordo com a página atual
+firebase.auth().onAuthStateChanged((user) => {
+  if (window.location.pathname.includes("login.html") && user) {
+    window.location.href = "dashboard.html";  // Se o usuário já estiver logado, redireciona para o dashboard
+  }
 
-// Protege o dashboard e outras páginas
-if (window.location.pathname.includes("dashboard.html") || window.location.pathname.includes("consultas.html")) {
-  protegerPagina();
-}
+  if (window.location.pathname.includes("dashboard.html") || window.location.pathname.includes("consultas.html")) {
+    protegerPagina();  // Protege as páginas de dashboard e outras
+  }
+});
 
 // Funcionalidade para o botão de logout
 document.getElementById("logoutButton")?.addEventListener("click", logout);

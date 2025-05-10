@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "public",
+    "public": "public",  // Esta linha precisa apontar para a pasta onde estão os arquivos
     "ignore": [
       "firebase.json",
       "**/.*",

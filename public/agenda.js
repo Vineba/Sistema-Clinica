@@ -1,82 +1,54 @@
-// Configuração do Firebase (já configurado previamente)
-const firebaseConfig = {
-    apiKey: "Sua_API_KEY",
-    authDomain: "sistema-clinica-a8bc0.firebaseapp.com",
-    projectId: "sistema-clinica-a8bc0",
-    storageBucket: "sistema-clinica-a8bc0.appspot.com",
-    messagingSenderId: "358716597367",
-    appId: "1:358716597367:web:c25e427d1ee6c00b2d1272"
-};
+document.addEventListener('DOMContentLoaded', function () {
+  const calendarEl = document.getElementById('calendar');
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    locale: 'pt-br',
+    initialView: 'dayGridMonth',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    },
+    events: async function(fetchInfo, successCallback, failureCallback) {
+  try {
+    const snapshot = await firebase.firestore().collection("consultas").get();
+    const eventos = snapshot.docs.map(doc => {
+      const data = doc.data();
+      console.log(data);  // Adicionei isso para verificar os dados que estão sendo recuperados
+      return {
+        title: `${data.paciente} - ${data.profissional}`,
+        start: `${data.data}T${data.hora}`,  // Verifique se data e hora estão corretos
+        allDay: false
+      };
+    });
+    successCallback(eventos);
+  } catch (err) {
+    console.error('Erro ao buscar consultas:', err);
+    failureCallback(err);
+  }
+},
+    eventClick: function(info) {
+      const consultaId = info.event.id;
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+      // Buscar dados detalhados da consulta no Firebase
+      firebase.firestore().collection('consultas').doc(consultaId).get().then(doc => {
+        const data = doc.data();
 
-// Adicionar uma nova consulta
-document.getElementById("formConsulta").addEventListener("submit", (e) => {
-  e.preventDefault();
+        // Preencher o modal com os dados da consulta
+        document.getElementById('modalPaciente').innerText = `Paciente: ${data.paciente}`;
+        document.getElementById('modalHorario').innerText = `Horário: ${data.hora}`;
+        document.getElementById('modalProfissional').innerText = `Profissional: ${data.profissional}`;
 
-  const nome = document.getElementById("nomePaciente").value;
-  const profissional = document.getElementById("profissional").value;
-  const dataHora = document.getElementById("dataHora").value;
-  const observacoes = document.getElementById("observacoes").value;
-
-  db.collection("consultas").add({
-    nomePaciente: nome,
-    profissional: profissional,
-    dataHora: firebase.firestore.Timestamp.fromDate(new Date(dataHora)),
-    observacoes: observacoes,
-    criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-  })
-  .then(() => {
-    document.getElementById("mensagem").textContent = "Consulta agendada com sucesso!";
-    document.getElementById("formConsulta").reset();
-    carregarConsultas(); // Atualizar lista após salvar
-  })
-  .catch((error) => {
-    document.getElementById("mensagem").textContent = "Erro ao salvar: " + error.message;
+        // Exibir o modal
+        document.getElementById('consultaModal').classList.remove('hidden');
+      });
+    }
   });
+
+  calendar.render();
+console.log('Calendário renderizado');
 });
 
-// Carregar consultas agendadas
-function carregarConsultas() {
-  const nomeFiltro = document.getElementById("filtroNome").value.toLowerCase();
-  const profissionalFiltro = document.getElementById("filtroProfissional").value.toLowerCase();
-
-  db.collection("consultas")
-    .orderBy("dataHora")
-    .onSnapshot((snapshot) => {
-      const lista = document.getElementById("listaConsultas");
-      lista.innerHTML = "";
-
-      snapshot.forEach((doc) => {
-        const consulta = doc.data();
-        const data = consulta.dataHora.toDate();
-        const dataStr = data.toISOString().split("T")[0];
-
-        const nomeCond = consulta.nomePaciente.toLowerCase().includes(nomeFiltro);
-        const profissionalCond = consulta.profissional.toLowerCase().includes(profissionalFiltro);
-
-        if (nomeCond && profissionalCond) {
-          const item = document.createElement("li");
-          const dataFormatada = data.toLocaleString("pt-BR");
-
-          item.className = "bg-gray-50 p-3 border rounded";
-          item.innerHTML = `
-            <strong>Paciente:</strong> ${consulta.nomePaciente}<br>
-            <strong>Profissional:</strong> ${consulta.profissional}<br>
-            <strong>Data e Hora:</strong> ${dataFormatada}<br>
-            <strong>Observações:</strong> ${consulta.observacoes || "-"}<br>
-          `;
-          lista.appendChild(item);
-        }
-      });
-    });
+// Função para fechar o modal
+function closeModal() {
+  document.getElementById('consultaModal').classList.add('hidden');
 }
-
-// Filtros ao digitar nome ou mudar a data
-document.getElementById("filtroNome").addEventListener("input", carregarConsultas);
-document.getElementById("filtroProfissional").addEventListener("input", carregarConsultas);
-document.getElementById("filtroData").addEventListener("change", carregarConsultas);
-
-// Chama a função para carregar as consultas quando a página for carregada
-carregarConsultas();

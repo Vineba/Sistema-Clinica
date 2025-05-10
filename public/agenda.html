@@ -3,132 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Agenda de Consultas</title>
+  <title>Agenda - Clínica</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- FullCalendar CSS & JS -->
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@3.10.2/dist/fullcalendar.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@3.10.2/dist/fullcalendar.min.js"></script>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js'></script>
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.min.js'></script>
 </head>
-<body class="bg-gray-100 p-6">
-  <div class="max-w-4xl mx-auto bg-white rounded shadow p-6">
-    <h1 class="text-2xl font-bold text-blue-600 mb-4">Agenda da Clínica</h1>
+<body class="bg-gray-100 min-h-screen p-4">
 
-    <div class="flex flex-col md:flex-row gap-4 mb-6">
-      <input type="text" id="filtroPaciente" placeholder="Filtrar por paciente" class="border p-2 rounded w-full md:w-1/2">
-      <input type="text" id="filtroProfissional" placeholder="Filtrar por profissional" class="border p-2 rounded w-full md:w-1/2">
-    </div>
+  <div class="bg-white rounded shadow p-4 mb-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold">Agenda de Consultas</h1>
+    <button id="logoutButton" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Sair</button>
+  </div>
 
-    <form id="formConsulta" class="mb-4">
-      <label for="nomePaciente" class="block mb-2 text-sm font-medium">Nome do Paciente</label>
-      <input type="text" id="nomePaciente" name="nomePaciente" class="w-full border rounded p-2 mb-4" required>
-
-      <label for="profissional" class="block mb-2 text-sm font-medium">Profissional</label>
-      <input type="text" id="profissional" name="profissional" class="w-full border rounded p-2 mb-4" required>
-
-      <label for="dataHora" class="block mb-2 text-sm font-medium">Data e Hora</label>
-      <input type="datetime-local" id="dataHora" name="dataHora" class="w-full border rounded p-2 mb-4" required>
-
-      <label for="observacoes" class="block mb-2 text-sm font-medium">Observações</label>
-      <textarea id="observacoes" name="observacoes" class="w-full border rounded p-2 mb-4"></textarea>
-
-      <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700">Agendar Consulta</button>
-    </form>
-
-    <p id="mensagem" class="text-center text-green-500"></p>
-
+  <div class="bg-white rounded shadow p-4">
     <div id="calendar"></div>
   </div>
 
-  <!-- Firebase Config -->
+  <!-- Modal para exibir detalhes da consulta -->
+  <div id="consultaModal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
+    <div class="bg-white p-4 rounded shadow-lg w-1/3">
+      <h2 id="modalPaciente" class="text-xl font-bold mb-2">Paciente: </h2>
+      <p id="modalHorario" class="text-lg mb-2">Horário: </p>
+      <p id="modalProfissional" class="text-lg mb-2">Profissional: </p>
+      <button onclick="closeModal()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-4">Fechar</button>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <!-- Firebase Config + Auth -->
+  <script src="auth.js"></script>
+
   <script>
-    const firebaseConfig = {
-      apiKey: "Sua_API_KEY",
-      authDomain: "sistema-clinica-a8bc0.firebaseapp.com",
-      projectId: "sistema-clinica-a8bc0",
-      storageBucket: "sistema-clinica-a8bc0.appspot.com",
-      messagingSenderId: "358716597367",
-      appId: "1:358716597367:web:c25e427d1ee6c00b2d1272"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-  </script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const calendarEl = document.getElementById('calendar');
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        locale: 'pt-br',
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: async function(fetchInfo, successCallback, failureCallback) {
+          try {
+            const snapshot = await firebase.firestore().collection("consultas").get();
+            const eventos = snapshot.docs.map(doc => {
+              const data = doc.data();
+              return {
+                id: doc.id,
+                title: `${data.paciente} - ${data.profissional}`,
+                start: `${data.data}T${data.hora}`,
+                allDay: false
+              };
+            });
+            successCallback(eventos);
+          } catch (err) {
+            console.error('Erro ao buscar consultas:', err);
+            failureCallback(err);
+          }
+        },
+        eventClick: function(info) {
+          const consultaId = info.event.id;
 
-  <!-- Agenda Calendar Script -->
-  <script>
-    document.getElementById("formConsulta").addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      const nome = document.getElementById("nomePaciente").value;
-      const profissional = document.getElementById("profissional").value;
-      const dataHora = document.getElementById("dataHora").value;
-      const observacoes = document.getElementById("observacoes").value;
-
-      db.collection("consultas").add({
-        nomePaciente: nome,
-        profissional: profissional,
-        dataHora: firebase.firestore.Timestamp.fromDate(new Date(dataHora)),
-        observacoes: observacoes,
-        criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-      })
-      .then(() => {
-        document.getElementById("mensagem").textContent = "Consulta agendada com sucesso!";
-        document.getElementById("formConsulta").reset();
-        carregarConsultas(); // Atualizar lista após salvar
-      })
-      .catch((error) => {
-        document.getElementById("mensagem").textContent = "Erro ao salvar: " + error.message;
+          // Buscar dados detalhados da consulta no Firebase
+          firebase.firestore().collection('consultas').doc(consultaId).get().then(doc => {
+            const data = doc.data();
+            // Preencher o modal com os dados da consulta
+            document.getElementById('modalPaciente').innerText = `Paciente: ${data.paciente}`;
+            document.getElementById('modalHorario').innerText = `Horário: ${data.hora}`;
+            document.getElementById('modalProfissional').innerText = `Profissional: ${data.profissional}`;
+            document.getElementById('consultaModal').classList.remove('hidden');
+          });
+        }
       });
+      calendar.render();
     });
 
-    function carregarConsultas() {
-      const nomeFiltro = document.getElementById("filtroPaciente").value.toLowerCase();
-      const profissionalFiltro = document.getElementById("filtroProfissional").value.toLowerCase();
-
-      db.collection("consultas")
-        .orderBy("dataHora")
-        .onSnapshot((snapshot) => {
-          const lista = document.getElementById("listaConsultas");
-          lista.innerHTML = "";
-
-          snapshot.forEach((doc) => {
-            const consulta = doc.data();
-            const data = consulta.dataHora.toDate();
-            const dataStr = data.toISOString().split("T")[0];
-
-            const nomeCond = consulta.nomePaciente.toLowerCase().includes(nomeFiltro);
-            const profissionalCond = consulta.profissional.toLowerCase().includes(profissionalFiltro);
-
-            if (nomeCond && profissionalCond) {
-              const item = document.createElement("li");
-              const dataFormatada = data.toLocaleString("pt-BR");
-
-              item.className = "bg-gray-50 p-3 border rounded";
-              item.innerHTML = `
-                <strong>Paciente:</strong> ${consulta.nomePaciente}<br>
-                <strong>Profissional:</strong> ${consulta.profissional}<br>
-                <strong>Data e Hora:</strong> ${dataFormatada}<br>
-                <strong>Observações:</strong> ${consulta.observacoes || "-"}<br>
-              `;
-              lista.appendChild(item);
-            }
-          });
-        });
+    // Função para fechar o modal
+    function closeModal() {
+      document.getElementById('consultaModal').classList.add('hidden');
     }
-
-    // Filtros ao digitar nome ou mudar a data
-    document.getElementById("filtroPaciente").addEventListener("input", carregarConsultas);
-    document.getElementById("filtroProfissional").addEventListener("input", carregarConsultas);
-    document.getElementById("filtroData").addEventListener("change", carregarConsultas);
-
-    // Carregar consultas ao iniciar
-    carregarConsultas();
   </script>
+
+  <script src="agenda.js"></script>
 </body>
 </html>
